@@ -7,39 +7,35 @@ namespace BugReplication
 {
 	internal static class Program
 	{
-		private const int Times = 12;
-
 		static void Main(string[] args)
 		{
 			Console.WriteLine("Start");
+			var db = NewDbContext();
 
-			try
+			for (var i = 0; i < 10; i++)
 			{
-				var tasks = Enumerable.Range(1, Times)
-					.Select(i => Task.Run(async () =>
-					{
-						var dateTime = DateTime.Parse("2018-06-25");
-						var db = NewDbContext();
-						var data = await db.Set<Record>()
-							.Where(r => !r.Bool && r.Date.Date == dateTime.Date)
-							.ToListAsync();
-					}));
+				Task.Run(async () =>
+				{
+					await db.Set<Record>()
+						.AsNoTracking()
+						.Where(_ => Enumerable.Range(1, 2).ToArray().Contains(_.Id))
+						.Skip(20)
+						.Take(25)
+						.OrderBy(x => x.String)
+						.ToListAsync();
+				}).Wait();
 
-				Task.WaitAll(tasks.ToArray());
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e);
+				Console.WriteLine();
 			}
 
-			Console.WriteLine("Finish!");
-			Console.ReadKey();
+			Console.WriteLine("Finish");
+			Console.ReadLine();
 		}
 
-		private static MyDbContext NewDbContext()
-		   => new MyDbContext($"Server=172.30.57.193; Port=3306; Database=test; Uid=root; Pwd=root; CharSet=utf8; License Key={LicenseKey};");
+		static MyDbContext NewDbContext()
+			=> new MyDbContext($"Server=172.30.57.193; Port=3306; Database=test; Uid=root; Pwd=root; CharSet=utf8; License Key={LicenseKey};");
 
-		private const string LicenseKey =
+		const string LicenseKey =
 			"";
 	}
 }

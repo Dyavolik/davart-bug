@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace BugReplication
 {
@@ -14,6 +16,8 @@ namespace BugReplication
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			optionsBuilder.UseMySql(ConnectionString);
+			optionsBuilder.UseLoggerFactory(new LoggerFactory(new[]
+				{new ConsoleLoggerProvider((log, logLevel) => logLevel == LogLevel.Information, true)}));
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
